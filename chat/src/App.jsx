@@ -32,6 +32,13 @@ const App = () => {
     }
   };
 
+  const handleKeyDown = (e) => {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+};
+
   
   const handlefindPartner=()=>{
     socket.emit('findPartner');
@@ -134,7 +141,7 @@ const App = () => {
       ))}
     </div>
     <form onSubmit={handleSubmit}>
-    {status === 'chatting' ? <button className='endbtn' onClick={handleDisconnect}>End Chat</button> :<button className='endbtn' onClick={handlefindPartner}>Find</button>}
+    {status === 'chatting' ? <button className='endbtn' onClick={handleDisconnect}>End Chat</button> :<button className='endbtn' onClick={handlefindPartner} onKeyDown={handleKeyDown}>Find</button>}
       <input id='message-input' type="text" onChange={(e)=>setMessage(e.target.value)} value={message} name="message" placeholder="Type a message..." />
      {/* <input id='room-input' type="text" onChange={(e)=>setRoom(e.target.value)} value={room} name="room" placeholder="Room Id" />*/}
       <button type="submit" className='sendbtn'> <span className='send-text'>Send</span> <span className="send-icon">➤</span></button>
