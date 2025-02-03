@@ -14,7 +14,7 @@ const App = () => {
   const[messages, setMessages] = useState([]);
   const[status, setStatus] = useState("welcome");
 
-  const socket = useMemo(()=>io("http://localhost:3000"), [])
+  const socket = useMemo(()=>io("https://vichat.onrender.com"), [])
   
 
   const handleSubmit = (e) => {
