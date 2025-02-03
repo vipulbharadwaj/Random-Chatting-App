@@ -19,93 +19,83 @@ const io = new Server(server, {
 });
 
 let waitingUsers = [];
+let activeChats = new Map(); // storing active chat pairs
 
 io.on("connection", (socket) => {
   console.log("A User is Connected", socket.id);
 
-  //Join a room
-  // socket.on("joinRoom", (room)=>{
-  //   socket.join(room);
-  //   console.log(`User ${socket.id} joined room: ${room}`);
-  // })
-
-  // socket.on("typing", ({room, isTyping}) => {
-  //   io.to(room).emit("typing", isTyping);
-  // });
-
- 
-  //when user is ready to chat
-  socket.on("findPartner", () => {
-    if (waitingUsers.length > 0) {
-      const partnerSocket = waitingUsers.pop();
-
-      //prevents self matching
-      if (partnerSocket.id === socket.id) {
-        socket.emit("waiting");
-        return;
-      }
-
-      if (partnerSocket) {
-        console.log("Partner Socket Id: ", partnerSocket.id);
-        socket.partner = partnerSocket.id;
-        partnerSocket.partner = socket.id;
+  socket.on("findPartner", ()=>{
+    try {
+      if(waitingUsers.length >0){
+        const partnerSocket = waitingUsers.shift();
+        
+        if(partnerSocket.id == socket.id){
+          socket.emit("waiting");
+          return;
+        }
+        activeChats.set(socket.id, partnerSocket.id);
+        activeChats.set(partnerSocket.id, socket.id);
 
         socket.emit("partnerFound", partnerSocket.id);
         partnerSocket.emit("partnerFound", socket.id);
-      } else {
-        socket.emit("waiting");
       }
-    } else {
-      if (!waitingUsers.some((user) => user.id === socket.id)) {
-        waitingUsers.push(socket);
+      else{
+        if(!waitingUsers.some((user)=> user.id===socket.id)){
+          waitingUsers.push(socket);
+          socket.emit("waiting");
+        }
       }
+    } catch (error) {
+      console.error(`Error in findPartner: ${error.message}`);
     }
+  })
+
+  //handling typing event
+  socket.on("typing", (isTyping)=>{
+    const partnerId = activeChats.get(socket.id);
+    if(partnerId){
+      io.to(partnerId).emit("typing", isTyping? `User ${socket.id}`: null);
+      }
   });
 
   //Handling Messages betweeen Users
   socket.on("message", (data) => {
     console.log("Message Received: ", data);
-    if (socket.partner) {
-      io.to(socket.partner).emit("message", data);
+    const partner = activeChats.get(socket.id);
+    if (partner) {
+      io.to(partner).emit("message", data);
     }
   });
 
   //Handling end chat
   socket.on("endChat", () => {
     console.log(`User ${socket.id} ended chat`);
-    if (socket.partner) {
+
+    const partnerId = activeChats.get(socket.id);
+    if (partnerId) {
       // Notify the partner about the disconnection
-      io.to(socket.partner).emit("partnerDisconnected");
-
-      // Get the partner socket and reset their partner reference
-      const partnerSocket = io.sockets.sockets.get(socket.partner);
-      if (partnerSocket) {
-        partnerSocket.partner = null;
-      }
+      io.to(partnerId).emit("partnerDisconnected");
+      activeChats.delete(socket.id);
+      activeChats.delete(partnerId);
     }
-
-    // Reset the user's partner reference
-    socket.partner = null;
-    waitingUsers = waitingUsers.filter((user) => user.id !== socket.id);
-
-    socket.emit("ready");
+    socket.emit("chatEnded");
   });
 
   // Handling Disconnection
   socket.on("disconnect", () => {
-    waitingUsers = waitingUsers.filter((userId) => userId !== socket.id);
+ 
     console.log("User Disconnected", socket.id);
+    //Removing from waiting user if socket is in the list
+    waitingUsers = waitingUsers.filter((userId) => userId.id !== socket.id);
 
-    if (socket.partner) {
+    const partnerSocket = activeChats.get(socket.id);
+    if (partnerSocket) {
       // Notify the partner about the disconnection
-      io.to(socket.partner).emit("partnerDisconnected");
-
-      // Get the partner socket and remove the partner reference
-      const partnerSocket = io.sockets.sockets.get(socket.partner);
-      if (partnerSocket) {
-        partnerSocket.partner = null;
-      }
+      io.to(partnerSocket).emit("partnerDisconnected");
+      activeChats.delete(socket.id);
+      activeChats.delete(partnerSocket);
     }
+    socket.emit("disconnected");
   });
 });
 

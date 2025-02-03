@@ -5,14 +5,16 @@ import { useState } from 'react';
 import { useMemo } from 'react';
 import './App.css'
 import AutoScroll from './components/AutoScroll';
+import Typing from './components/Typing';
 
 
 const App = () => {
   const [message, setMessage] = useState("");
-  //const [room, setRoom] = useState("");
   const[socketId, setSocketId] = useState("");
   const[messages, setMessages] = useState([]);
   const[status, setStatus] = useState("welcome");
+  const[isTyping, setIsTyping] = useState(false);
+  const typingTimeout = useRef(null);
 
   const socket = useMemo(()=>io("http://localhost:3000"), [])
   
@@ -43,13 +45,8 @@ const App = () => {
     setMessages([]);
     setMessage("");
     console.log("Disconnected from server");
-
   };
-  socket.on('ready', ()=>{
-    setTimeout(()=>{
-      setStatus('ready');
-    }, 2000)
-  })
+ 
   
   useEffect(() => {
    // setStatus("welcome");
@@ -61,6 +58,9 @@ const App = () => {
 
     const handlePartnerFound=()=>{
       setStatus("chatting");
+    }
+    const handleChatEnded=()=>{
+      setStatus("ended");
     }
      
     const handleWaiting=()=>{
@@ -82,11 +82,11 @@ const App = () => {
       console.log("receive-message", message);
     };
 
-
     socket.on("connect", handleConnect);
     socket.on("message", handleMessage);
     socket.on('partnerFound', handlePartnerFound);
     socket.on('connect_error', handleError);
+    socket.on('chatEnded', handleChatEnded);
     socket.on('partnerDisconnected', handleDisconnect);
     socket.on('waiting', handleWaiting);
   
@@ -95,10 +95,29 @@ const App = () => {
       socket.off("message", handleMessage);
       socket.off("partnerFound", handlePartnerFound);
       socket.off("connect_error", handleError);
+      socket.off("chatEnded", handleChatEnded);
       socket.off("partnerDisconnected", handleDisconnect);
     };
   }, [socket]);
 
+  const handleTyping=(e)=>{
+    const isUserTyping = e.target.value.length > 0;
+    if(!isTyping && isUserTyping){
+      setIsTyping(true);
+      socket.emit('typing', true);
+    }else if (!isUserTyping && isTyping) {
+      setIsTyping(false);
+      socket.emit('typing', false); 
+  }
+  if (typingTimeout.current) {
+    clearTimeout(typingTimeout.current);
+  }
+
+  typingTimeout.current = setTimeout(() => {
+    setIsTyping(false);
+    socket.emit("typing", false);
+  }, 1000);
+}
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
@@ -122,11 +141,8 @@ const App = () => {
         {status === 'waiting' && <p>Connecting to Partner...</p>}
         {status === 'disconnected' && <p>Chat Ended</p>}
         {status ==='chatting' && <p>Connected with Partner</p>}
-        {status==='ready' && <p>
-            Chat ended. please press <span>Find</span> to find a new partner.
-          </p>}
+        {status==='ended' && <p>Your chat partner has left. Tap find to start a new chat!</p>}
           {status==='error' && <p>Server is busy</p>}
-          
       </div>
       <hr />
     </div>
@@ -142,11 +158,12 @@ const App = () => {
           </div>
         </div>
       ))}
+      <Typing socket={socket} setIsTyping ={setIsTyping} />
       
     </AutoScroll>
     <form onSubmit={handleSubmit}>
-    {status === 'chatting' ? <button className='endbtn' onClick={handleDisconnect}>End Chat</button> :<button className='endbtn' onClick={handlefindPartner} >Find</button>}
-      <input id='message-input' type="text" onChange={(e)=>{setMessage(e.target.value)}} value={message} onKeyDown={handleKeyDown} name='message' placeholder='Type your message...'></input>
+    {status === 'chatting' ? <button className='endbtn' onClick={handleDisconnect}>End Chat</button> :<button className='endbtn' disabled={status ==='waiting'} onClick={handlefindPartner} >Find</button>}
+      <input id='message-input' type="text" disabled={status!=='chatting'} onChange={(e)=>{setMessage(e.target.value); handleTyping(e)}} value={message} onKeyDown={handleKeyDown} name='message' placeholder='Type your message...'></input>
      {/* <input id='room-input' type="text" onChange={(e)=>setRoom(e.target.value)} value={room} name="room" placeholder="Room Id" />*/}
       <button type="submit"  className='sendbtn' disabled={status!=='chatting'}>  <span className='send-text'>Send</span> <span className="send-icon">➤</span></button>
       

@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
+
 * {
   box-sizing: border-box;
   padding: 0;
@@ -80,11 +82,11 @@ body {
   background: green;
   box-shadow: 0 0 8px green;
 }
-.connection-status.ready::before {
-  background: yellow;
-  box-shadow: 0 0 8px yellow;
+.connection-status.ended::before {
+  background: red;
+  box-shadow: 0 0 8px red;
 }
-.connection-status.error::before{
+.connection-status.error::before {
   background: black;
   box-shadow: 0 0 8px black;
 }
@@ -99,11 +101,11 @@ body {
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   overflow-y: auto;
   scroll-behavior: smooth;
-  flex-direction: column;
+  position: relative;
 }
 
 .message {
-  margin-bottom: 15px;
+  margin-bottom: 12px;
   display: flex;
 }
 
@@ -112,11 +114,20 @@ body {
 }
 
 .message-bubble {
-  max-width: 70%;
-  padding: 12px 18px;
-  border-radius: 20px;
+  max-width: 68%;
+  padding: 8px 12px;
+  border-radius: 16px;
   position: relative;
   transition: transform 0.2s ease;
+  word-wrap: break-word;
+  display: inline-block;
+  margin: 5px 10px;
+}
+.message-bubble p {
+  margin: 0;
+  font-family: "Inter", serif;
+  font-optical-sizing: auto;
+  font-size: 14px;
 }
 
 .message.sent .message-bubble {
@@ -132,9 +143,9 @@ body {
 }
 .message-time {
   display: block;
-  font-size: 0.75rem;
+  font-size: 0.6rem;
   color: #7d8b99;
-  margin-top: 6px;
+  margin-top: 2px;
   text-align: right;
 }
 form {
@@ -148,8 +159,7 @@ form {
   flex-wrap: wrap;
 }
 
-#message-input,
-#room-input {
+#message-input {
   flex: 1;
   padding: 0.75rem 1rem;
   border: 2px solid #e2e8f0;
@@ -158,8 +168,7 @@ form {
   transition: all 0.2s ease;
 }
 
-#message-input,
-#room-input:focus {
+#message-input:focus {
   outline: none;
   border-color: var(--primary-color);
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
@@ -211,12 +220,15 @@ form {
 @media (max-width: 768px) {
   #message-input {
     width: 100%;
-    order: 2; /* Moves input to top */
+    order: 2;
+  }
+  .socket-id {
+    display: none;
   }
 
   .endbtn {
     order: 2;
-    padding: 0.3rem 0.7rem;
+    padding: 0.3rem 0.6rem;
   }
   .sendbtn {
     order: 3;
@@ -242,30 +254,26 @@ form {
     padding: 0rem;
   }
   .chat-header {
-    
     border-radius: 0rem;
   }
-  .chat-header h2{
+  .chat-header h2 {
     font-size: 16px;
   }
-  .socket-id {
-    display: none;
-  }
-
 
   .chat-body {
-    height: 76vh;
+    height: 74vh;
     border-radius: 0;
   }
   .connection-status {
-    font-size: 12px;
+    font-size: 10px;
+    font-weight: 600;
   }
   .connection-status::before {
     content: "";
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
-    box-shadow: 0 0 8px;
+    box-shadow: 0 0 4px;
     display: inline-block;
     margin-bottom: 2px;
   }
@@ -277,16 +285,38 @@ form {
 }
 
 .typing-indicator {
-  font-size: 0.9rem;
-  color: #777;
+  padding: 8px 12px;
+  color: #3c3c3c;
+  font-size: 0.8rem;
   font-style: italic;
-  margin-left: 10px;
-  margin-top: 10px;
-  animation: typing-blink 1.5s infinite;
+  bottom: 0;
+  left: 10px;
+  position: sticky;
+  max-width: 80%;
+  transition: opacity 0.3s ease-in-out;
 }
 
-@keyframes typing-blink {
-  0% { opacity: 0.2; }
-  50% { opacity: 1; }
-  100% { opacity: 0.2; }
+.typing-indicator::after {
+  content: "• • •";
+  font-size: 0.68rem;
+  font-style: italic;
+  margin-right: 4px;
+  animation: typing-dots 1.5s infinite;
+  position: relative;
+  top: 4px;
+}
+
+@keyframes typing-dots {
+  0% {
+    content: "• • •";
+  }
+  33% {
+    content: "• •";
+  }
+  66% {
+    content: "•";
+  }
+  100% {
+    content: "• • •";
+  }
 }

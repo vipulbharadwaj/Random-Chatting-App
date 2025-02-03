@@ -6,7 +6,6 @@ const AutoScroll = ({children, messages}) => {
     const chatContainerRef = useRef(null);
     const isAtBottomRef = useRef(null);
 
-
      // Scroll handling
 useEffect(() => {
     const container = chatContainerRef.current;
