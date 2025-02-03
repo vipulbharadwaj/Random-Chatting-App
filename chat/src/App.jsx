@@ -1,9 +1,10 @@
-import React from 'react'
+import React, { useRef } from 'react'
 import { useEffect } from 'react';
 import { io, Socket } from "socket.io-client";
 import { useState } from 'react';
 import { useMemo } from 'react';
 import './App.css'
+import AutoScroll from './components/AutoScroll';
 
 
 const App = () => {
@@ -12,12 +13,12 @@ const App = () => {
   const[socketId, setSocketId] = useState("");
   const[messages, setMessages] = useState([]);
   const[status, setStatus] = useState("welcome");
-  //console.log(messages);
+
+ 
 
   const socket = useMemo(()=>io("https://vichat.onrender.com"), [])
   
 
- 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (message.trim()) {
@@ -29,9 +30,12 @@ const App = () => {
       setMessages(prev => [...prev, newMessage]);
       socket.emit('message', message);
       setMessage("");
+      setIsTyping(false);
+      socket.emit("typing", false);
     }
   };
 
+<<<<<<< HEAD
    const handleKeyDown = (e) => {
     if (e.key === "Enter") {
       e.preventDefault(); 
@@ -42,6 +46,8 @@ const App = () => {
   };
 
   
+=======
+>>>>>>> e16c0ea (Updated Auto Scroll)
   const handlefindPartner=()=>{
     socket.emit('findPartner');
     setStatus('waiting');
@@ -52,6 +58,7 @@ const App = () => {
     setMessages([]);
     setMessage("");
     console.log("Disconnected from server");
+
   };
   socket.on('ready', ()=>{
     setTimeout(()=>{
@@ -59,7 +66,6 @@ const App = () => {
     }, 2000)
   })
   
-
   useEffect(() => {
    // setStatus("welcome");
     const handleConnect = () => {
@@ -107,7 +113,18 @@ const App = () => {
       socket.off("partnerDisconnected", handleDisconnect);
     };
   }, [socket]);
-  
+
+
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault(); 
+      if (message.trim()) {
+        handleSubmit(e); 
+      }
+    }
+  };
+
   
   return (
     <>
@@ -130,7 +147,7 @@ const App = () => {
       </div>
       <hr />
     </div>
-    <div className="chat-body">
+    <AutoScroll messages={messages}>
     {messages.map((msg, i) => (
         <div
           key={i}
@@ -142,12 +159,19 @@ const App = () => {
           </div>
         </div>
       ))}
-    </div>
+      
+    </AutoScroll>
     <form onSubmit={handleSubmit}>
     {status === 'chatting' ? <button className='endbtn' onClick={handleDisconnect}>End Chat</button> :<button className='endbtn' onClick={handlefindPartner} >Find</button>}
+<<<<<<< HEAD
       <input id='message-input' type="text" onChange={(e)=>setMessage(e.target.value)} value={message} name="message" onKeyDown={handleKeyDown} placeholder="Type a message..." />
      {/* <input id='room-input' type="text" onChange={(e)=>setRoom(e.target.value)} value={room} name="room" placeholder="Room Id" />*/}
       <button type="submit" className='sendbtn' disabled={status!=='chatting'}> <span className='send-text'>Send</span> <span className="send-icon">➤</span></button>
+=======
+      <input id='message-input' type="text" onChange={(e)=>{setMessage(e.target.value);handleTyping()}} value={message} onKeyDown={handleKeyDown} name='message' placeholder='Type your message...'></input>
+     {/* <input id='room-input' type="text" onChange={(e)=>setRoom(e.target.value)} value={room} name="room" placeholder="Room Id" />*/}
+      <button type="submit"  className='sendbtn' disabled={status!=='chatting'}>  <span className='send-text'>Send</span> <span className="send-icon">➤</span></button>
+>>>>>>> e16c0ea (Updated Auto Scroll)
       
      
       

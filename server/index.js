@@ -23,6 +23,17 @@ let waitingUsers = [];
 io.on("connection", (socket) => {
   console.log("A User is Connected", socket.id);
 
+  //Join a room
+  // socket.on("joinRoom", (room)=>{
+  //   socket.join(room);
+  //   console.log(`User ${socket.id} joined room: ${room}`);
+  // })
+
+  // socket.on("typing", ({room, isTyping}) => {
+  //   io.to(room).emit("typing", isTyping);
+  // });
+
+ 
   //when user is ready to chat
   socket.on("findPartner", () => {
     if (waitingUsers.length > 0) {
@@ -59,27 +70,25 @@ io.on("connection", (socket) => {
     }
   });
 
-
   //Handling end chat
-  socket.on('endChat', () => {
+  socket.on("endChat", () => {
     console.log(`User ${socket.id} ended chat`);
-
     if (socket.partner) {
       // Notify the partner about the disconnection
-      io.to(socket.partner).emit('partnerDisconnected');
+      io.to(socket.partner).emit("partnerDisconnected");
 
       // Get the partner socket and reset their partner reference
       const partnerSocket = io.sockets.sockets.get(socket.partner);
       if (partnerSocket) {
-        partnerSocket.partner = null; 
+        partnerSocket.partner = null;
       }
     }
 
     // Reset the user's partner reference
     socket.partner = null;
-    waitingUsers = waitingUsers.filter(user => user.id !== socket.id);
+    waitingUsers = waitingUsers.filter((user) => user.id !== socket.id);
 
-    socket.emit('ready');
+    socket.emit("ready");
   });
 
   // Handling Disconnection

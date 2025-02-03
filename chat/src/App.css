@@ -99,6 +99,7 @@ body {
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   overflow-y: auto;
   scroll-behavior: smooth;
+  flex-direction: column;
 }
 
 .message {
@@ -241,6 +242,7 @@ form {
     padding: 0rem;
   }
   .chat-header {
+    
     border-radius: 0rem;
   }
   .chat-header h2{
@@ -249,6 +251,7 @@ form {
   .socket-id {
     display: none;
   }
+
 
   .chat-body {
     height: 76vh;
@@ -271,4 +274,19 @@ form {
     border-radius: 0;
     border-top: 1px grey solid;
   }
+}
+
+.typing-indicator {
+  font-size: 0.9rem;
+  color: #777;
+  font-style: italic;
+  margin-left: 10px;
+  margin-top: 10px;
+  animation: typing-blink 1.5s infinite;
+}
+
+@keyframes typing-blink {
+  0% { opacity: 0.2; }
+  50% { opacity: 1; }
+  100% { opacity: 0.2; }
 }
