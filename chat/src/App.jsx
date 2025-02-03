@@ -14,9 +14,7 @@ const App = () => {
   const[messages, setMessages] = useState([]);
   const[status, setStatus] = useState("welcome");
 
- 
-
-  const socket = useMemo(()=>io("https://vichat.onrender.com"), [])
+  const socket = useMemo(()=>io("http://localhost:3000"), [])
   
 
   const handleSubmit = (e) => {
@@ -35,19 +33,6 @@ const App = () => {
     }
   };
 
-<<<<<<< HEAD
-   const handleKeyDown = (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault(); 
-      if (message.trim()) {
-        handleSubmit(e); 
-      }
-    }
-  };
-
-  
-=======
->>>>>>> e16c0ea (Updated Auto Scroll)
   const handlefindPartner=()=>{
     socket.emit('findPartner');
     setStatus('waiting');
@@ -115,7 +100,6 @@ const App = () => {
   }, [socket]);
 
 
-
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
       e.preventDefault(); 
@@ -124,7 +108,6 @@ const App = () => {
       }
     }
   };
-
   
   return (
     <>
@@ -163,17 +146,9 @@ const App = () => {
     </AutoScroll>
     <form onSubmit={handleSubmit}>
     {status === 'chatting' ? <button className='endbtn' onClick={handleDisconnect}>End Chat</button> :<button className='endbtn' onClick={handlefindPartner} >Find</button>}
-<<<<<<< HEAD
-      <input id='message-input' type="text" onChange={(e)=>setMessage(e.target.value)} value={message} name="message" onKeyDown={handleKeyDown} placeholder="Type a message..." />
-     {/* <input id='room-input' type="text" onChange={(e)=>setRoom(e.target.value)} value={room} name="room" placeholder="Room Id" />*/}
-      <button type="submit" className='sendbtn' disabled={status!=='chatting'}> <span className='send-text'>Send</span> <span className="send-icon">➤</span></button>
-=======
-      <input id='message-input' type="text" onChange={(e)=>{setMessage(e.target.value);handleTyping()}} value={message} onKeyDown={handleKeyDown} name='message' placeholder='Type your message...'></input>
+      <input id='message-input' type="text" onChange={(e)=>{setMessage(e.target.value)}} value={message} onKeyDown={handleKeyDown} name='message' placeholder='Type your message...'></input>
      {/* <input id='room-input' type="text" onChange={(e)=>setRoom(e.target.value)} value={room} name="room" placeholder="Room Id" />*/}
       <button type="submit"  className='sendbtn' disabled={status!=='chatting'}>  <span className='send-text'>Send</span> <span className="send-icon">➤</span></button>
->>>>>>> e16c0ea (Updated Auto Scroll)
-      
-     
       
     </form>
     </div>
