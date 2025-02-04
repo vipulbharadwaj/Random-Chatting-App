@@ -145,6 +145,7 @@ const App = () => {
           {status==='error' && <p>Server is busy</p>}
       </div>
       <hr />
+       <Typing socket={socket} setIsTyping ={setIsTyping} />
     </div>
     <AutoScroll messages={messages}>
     {messages.map((msg, i) => (
@@ -158,7 +159,6 @@ const App = () => {
           </div>
         </div>
       ))}
-      <Typing socket={socket} setIsTyping ={setIsTyping} />
       
     </AutoScroll>
     <form onSubmit={handleSubmit}>
