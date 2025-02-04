@@ -67,7 +67,7 @@ body {
 }
 .connection-status.connected::before {
   background: rgb(52, 115, 240);
-  box-shadow: 0 0 8px rgb(60, 128, 245);
+  box-shadow: 0 0 8px rgb(52, 115, 248);
 }
 
 .connection-status.waiting::before {
@@ -92,9 +92,7 @@ body {
   background: black;
   box-shadow: 0 0 8px black;
 }
-.connection-status.ready span {
-  color: red;
-}
+
 
 .chat-body {
   padding: 1rem;
@@ -292,7 +290,6 @@ form {
   font-size: 0.6rem;
   font-weight: 600;
   font-family: "Inter", serif;
-  font-style: italic;
   left: 10px;
   bottom: -2px;
   align-items: center;
