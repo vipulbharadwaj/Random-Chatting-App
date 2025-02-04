@@ -65,7 +65,7 @@ io.on("connection", (socket) => {
   });
 
   //Handling Messages betweeen Users
-  socket.on("message", (data) => {
+  socket.on("message", async(data) => {
     console.log("Message Received: ", data);
     const partner = activeChats.get(socket.id);
     if (partner) {
