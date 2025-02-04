@@ -15,7 +15,7 @@ const App = () => {
   const [isTyping, setIsTyping] = useState(false);
   const typingTimeout = useRef(null);
 
-  const socket = useMemo(() => io("http://localhost:3000"), []);
+  const socket = useMemo(() => io("https://vichat.onrender.com"), []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
