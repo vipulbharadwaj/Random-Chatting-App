@@ -5,6 +5,12 @@ const { Server } = require("socket.io");
 const cors = require("cors");
 const { watch } = require("fs");
 const { setTimeout } = require("timers/promises");
+const admin = require("firebase-admin");
+
+const serviceAccount = JSON.parse(process.env.FIREBASE_CREDENTIALS);
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+});
 
 const app = express();
 const server = http.createServer(app);
@@ -65,6 +71,24 @@ io.on("connection", (socket) => {
     if (partner) {
       io.to(partner).emit("message", data);
     }
+     const chatId = [socket.id, partner].sort().join("_");
+      const chatRef = db.collection("chats").doc(chatId);
+      try {
+        await chatRef.set(
+          {
+            messages: admin.firestore.FieldValue.arrayUnion({
+              sender: socket.id,
+              receiver: partner,
+              text: data,
+              timestamp: admin.firestore.Timestamp.now(),
+            }),
+          },
+          { merge: true }
+        );
+
+      } catch (error) {
+        console.error("Error saving message:", error);
+      }
   });
 
   //Handling end chat
