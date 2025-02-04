@@ -4,7 +4,8 @@ const http = require("http");
 const { Server } = require("socket.io");
 const cors = require("cors");
 const admin = require("firebase-admin");
-const serviceAccount = require("./service-account.json");
+
+const serviceAccount = JSON.parse(process.env.FIREBASE_CREDENTIALS);
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
