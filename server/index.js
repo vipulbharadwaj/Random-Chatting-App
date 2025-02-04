@@ -5,6 +5,14 @@ const { Server } = require("socket.io");
 const cors = require("cors");
 const { watch } = require("fs");
 const { setTimeout } = require("timers/promises");
+const admin = require("firebase-admin");
+const serviceAccount = require("./service-account.json");
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+});
+
+const db = admin.firestore();
 
 const app = express();
 const server = http.createServer(app);
@@ -24,12 +32,12 @@ let activeChats = new Map(); // storing active chat pairs
 io.on("connection", (socket) => {
   console.log("A User is Connected", socket.id);
 
-  socket.on("findPartner", ()=>{
+  socket.on("findPartner", () => {
     try {
-      if(waitingUsers.length >0){
+      if (waitingUsers.length > 0) {
         const partnerSocket = waitingUsers.shift();
-        
-        if(partnerSocket.id == socket.id){
+
+        if (partnerSocket.id == socket.id) {
           socket.emit("waiting");
           return;
         }
@@ -38,9 +46,8 @@ io.on("connection", (socket) => {
 
         socket.emit("partnerFound", partnerSocket.id);
         partnerSocket.emit("partnerFound", socket.id);
-      }
-      else{
-        if(!waitingUsers.some((user)=> user.id===socket.id)){
+      } else {
+        if (!waitingUsers.some((user) => user.id === socket.id)) {
           waitingUsers.push(socket);
           socket.emit("waiting");
         }
@@ -48,23 +55,42 @@ io.on("connection", (socket) => {
     } catch (error) {
       console.error(`Error in findPartner: ${error.message}`);
     }
-  })
+  });
 
   //handling typing event
-  socket.on("typing", (isTyping)=>{
+  socket.on("typing", (isTyping) => {
     const partnerId = activeChats.get(socket.id);
-    if(partnerId){
-      io.to(partnerId).emit("typing", isTyping? `User ${socket.id}`: null);
-      }
+    if (partnerId) {
+      io.to(partnerId).emit("typing", isTyping ? `User ${socket.id}` : null);
+    }
   });
 
   //Handling Messages betweeen Users
-  socket.on("message", (data) => {
+  socket.on("message", async(data) => {
     console.log("Message Received: ", data);
     const partner = activeChats.get(socket.id);
     if (partner) {
       io.to(partner).emit("message", data);
     }
+     // Store message in Firestore
+      const chatId = [socket.id, partner].sort().join("_");
+      const chatRef = db.collection("chats").doc(chatId);
+      try {
+        await chatRef.set(
+          {
+            messages: admin.firestore.FieldValue.arrayUnion({
+              sender: socket.id,
+              receiver: partner,
+              text: data,
+              timestamp: admin.firestore.Timestamp.now(),
+            }),
+          },
+          { merge: true }
+        );
+
+      } catch (error) {
+        console.error("Error saving message:", error);
+      }
   });
 
   //Handling end chat
@@ -83,7 +109,6 @@ io.on("connection", (socket) => {
 
   // Handling Disconnection
   socket.on("disconnect", () => {
- 
     console.log("User Disconnected", socket.id);
     //Removing from waiting user if socket is in the list
     waitingUsers = waitingUsers.filter((userId) => userId.id !== socket.id);
@@ -106,3 +131,4 @@ const port = process.env.PORT || 3000;
 server.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
+
