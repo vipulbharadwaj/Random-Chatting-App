@@ -4,11 +4,13 @@ const http = require("http");
 const { Server } = require("socket.io");
 const cors = require("cors");
 const admin = require("firebase-admin");
+const { format } = require("path");
+const { timeStamp } = require("console");
 
 const serviceAccount = JSON.parse(process.env.FIREBASE_CREDENTIALS);
 
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
+  credential: admin.credential.cert(serviceAccount),
 });
 
 const db = admin.firestore();
@@ -65,32 +67,33 @@ io.on("connection", (socket) => {
   });
 
   //Handling Messages betweeen Users
-  socket.on("message", async(data) => {
+  socket.on("message", async (data) => {
     console.log("Message Received: ", data);
     const partner = activeChats.get(socket.id);
     if (partner) {
       io.to(partner).emit("message", data);
     }
-     // Store message in Firestore
-      const chatId = [socket.id, partner].sort().join("_");
-      const chatRef = db.collection("chats").doc(chatId);
-      try {
-        await chatRef.set(
-          {
-            messages: admin.firestore.FieldValue.arrayUnion({
-              sender: socket.id,
-              receiver: partner,
-              text: data,
-              timestamp: admin.firestore.Timestamp.now(),
-            }),
-          },
-          { merge: true }
-        );
-
-      } catch (error) {
-        console.error("Error saving message:", error);
-      }
+    // Store message in Firestore
+    const chatId = [socket.id, partner].sort().join("_");
+    const chatRef = db.collection("chats").doc(chatId);
+    try {
+      await chatRef.set(
+        {
+          messages: admin.firestore.FieldValue.arrayUnion({
+            sender: socket.id,
+            receiver: partner,
+            text: data,
+            timestamp: admin.firestore.Timestamp.now(),
+          }),
+        },
+        { merge: true }
+      );
+    } catch (error) {
+      console.error("Error saving message:", error);
+    }
   });
+
+
 
   //Handling end chat
   socket.on("endChat", () => {
@@ -130,4 +133,3 @@ const port = process.env.PORT || 3000;
 server.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
-

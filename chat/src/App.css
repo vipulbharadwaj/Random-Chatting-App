@@ -206,6 +206,34 @@ form {
 .endbtn:active {
   transform: translateY(0);
 }
+
+.upload-button {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 0.75rem 0.8rem;
+  border-radius: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  font-weight: bold;
+  font-size: 0.6rem;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.upload-button:hover {
+  background-color: var(--secondary-color);
+  transform: scale(1.05);
+}
+
+.upload-icon {
+  font-size: 28px;  
+}
+
+input[type="file"] {
+  display: none;
+}
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -233,7 +261,8 @@ form {
   .sendbtn {
     order: 3;
   }
-  .sendbtn {
+ 
+  .sendbtn, .upload-button {
     width: 50px;
     height: 50px;
     padding: 0;
@@ -308,6 +337,7 @@ form {
   top: 4px;
 }
 
+
 @keyframes typing-dots {
   0% {
     content: "• • •";
@@ -322,3 +352,9 @@ form {
     content: "• • •";
   }
 }
+
+.upload-button-container {
+  position: relative;
+}
+
+

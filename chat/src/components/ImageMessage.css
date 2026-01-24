@@ -1,0 +1,36 @@
+.image-message {
+    position: relative;
+    display: inline-block;
+    max-width: 200px;
+    margin: 10px 0;
+  }
+  
+  .chat-image {
+    max-width: 200px;
+    height: auto;
+    border-radius: 8px;
+    transition: filter 0.3s ease;
+    cursor: pointer;
+  }
+  
+  .blur {
+    filter: blur(12px);
+  }
+  
+  .clear {
+    filter: none;
+  }
+  
+  .view-button {
+    position: absolute;
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.7);
+    color: rgb(246, 246, 246);
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
